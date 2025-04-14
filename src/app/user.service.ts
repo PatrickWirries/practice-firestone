@@ -1,4 +1,6 @@
-import {Injectable } from '@angular/core';
+import {Injectable, inject } from '@angular/core';
+import { collection, collectionData, doc, Firestore, setDoc } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 
 export interface User{
@@ -11,6 +13,23 @@ export interface User{
   providedIn: 'root'
 })
 export class UserService {
+
+private firestore = inject(Firestore); //Don't use the lite version (Don't forget to import 'inject')
+private userCollection = collection(this.firestore, 'users') //Using firestore database, creating a collection called 'users'
+
+
+//Get users
+getUsers():Observable<User[]>{
+return collectionData(this.userCollection, ({idField : 'id'})) as Observable<User[]>; //Name of the collection we're using, optional id field. Returns array of observables
+}
+
+//Add a user (type User)
+addUser(newUser: User){
+const userRef = doc(this.firestore, `users/${newUser.id}`); //Create a document in our firestore database. Specify the path w/ userID. (Import doc)
+newUser.id = userRef.id;
+setDoc(userRef, newUser); //Set the document with Name of document and newUser object
+}
+
 
   // This service is for CRUD operations on users
   // It uses AngularFire for Firestore operations
